@@ -1,0 +1,48 @@
+#!/usr/bin/python3.6
+
+import sys
+import onnx
+from onnx import optimizer
+from onnx import helper, shape_inference
+import onnx.utils
+
+model_path = sys.argv[1]
+out_path = sys.argv[2]
+
+print(model_path)
+print(out_path)
+
+original_model = onnx.load(model_path)
+
+# A full list of supported optimization passes can be found using get_available_passes()
+all_passes = optimizer.get_available_passes()
+print("Available optimization passes:")
+for p in all_passes:
+    print(p)
+print()
+
+passes = [
+	"eliminate_deadend",
+	"eliminate_identity",
+	"eliminate_nop_dropout",
+	"eliminate_nop_monotone_argmax",
+	"eliminate_nop_pad",
+	"eliminate_nop_transpose",
+	"eliminate_unused_initializer",
+	"extract_constant_to_initializer",
+	"fuse_add_bias_into_conv",
+	"fuse_bn_into_conv",
+	"fuse_consecutive_concats",
+	"fuse_consecutive_log_softmax",
+	"fuse_consecutive_reduce_unsqueeze",
+	"fuse_consecutive_squeezes",
+	"fuse_consecutive_transposes",
+	"fuse_matmul_add_bias_into_gemm",
+	"fuse_pad_into_conv",
+	"fuse_transpose_into_gemm",
+	"lift_lexical_references",
+	"nop"
+]
+optimized_model = optimizer.optimize(original_model, passes)
+polished_model = onnx.utils.polish_model(optimized_model)
+onnx.save(polished_model, out_path)
